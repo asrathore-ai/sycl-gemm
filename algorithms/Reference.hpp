@@ -4,11 +4,11 @@
 namespace SyclGEMM{
 
     template<typename T>
-    void reference_gemm(const T *const A, const T *const B, T* C, int M, int N, int K, float alpha, float beta){
+    void reference_gemm(const T *const A, const T *const B, T* C, int M, int N, int K){
         // A:M*K
         // B:K*N
         // C:M*N
-        // C = alpha*(AB) + beta*C;
+        // C = AB + C;
 
         for(int i = 0; i < M; i++){
             for(int j = 0; j < N; j++){
@@ -16,7 +16,7 @@ namespace SyclGEMM{
                 for(int k = 0; k < K; k++){
                     ab += A[i*K + k]*B[k*N + j];
                 }
-                C[i*N + j] = alpha*ab + beta*C[i*N + j];
+                C[i*N + j] = ab + C[i*N + j];
             }
         }
     }
