@@ -1,5 +1,6 @@
 #kernel objects
 naive
+tiled 
 
 # Prerequisites
 *.d

@@ -1,12 +1,14 @@
 #include "Utils.hpp"
 #include "algorithms/Reference.hpp"
-#include "algorithms/Naive.hpp"
+#include "algorithms/Tiled.hpp"
 
 constexpr int M = 512;
 constexpr int N = 512;
 constexpr int K = 512;
-constexpr int wgp_size_m = 32;
-constexpr int wgp_size_n = 32;
+constexpr int tile_dim = 32;
+constexpr int wgp_size_m = tile_dim;
+constexpr int wgp_size_n = tile_dim;
+constexpr int tile_size = wgp_size_m*wgp_size_n;
 
 int main(){
     sycl::queue q{sycl::gpu_selector_v};
@@ -26,7 +28,11 @@ int main(){
     q.submit(
     [&](sycl::handler& syclHandler)
     {
-        SyclGEMM::NaiveGemm<opT> 
+
+        sycl::local_accessor<opT, 2> tile_A(local_range, syclHandler);
+        sycl::local_accessor<opT, 2> tile_B(local_range, syclHandler);
+
+        SyclGEMM::TiledGEMM<opT, tile_dim> 
         kernel(
             ctx.A.device_ptr,
             ctx.B.device_ptr,
@@ -35,7 +41,9 @@ int main(){
             ctx.N,
             ctx.K,
             ctx.alpha,
-            ctx.beta
+            ctx.beta,
+            tile_A,
+            tile_B
         );
         syclHandler.parallel_for(nd_range, kernel);
     }).wait();
