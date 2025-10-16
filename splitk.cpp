@@ -1,11 +1,12 @@
 #include "Utils.hpp"
 #include "algorithms/Reference.hpp"
-#include "algorithms/Tiled.hpp"
+#include "algorithms/SplitK.hpp"
 
 constexpr int M = 512;
 constexpr int N = 512;
 constexpr int K = 4096;
-constexpr int tile_dim = 32;
+constexpr int split_factor = 4;
+constexpr int tile_dim = 16;
 constexpr int wgp_size_m = tile_dim;
 constexpr int wgp_size_n = tile_dim;
 constexpr int tile_size = wgp_size_m*wgp_size_n;
@@ -21,18 +22,25 @@ int main(){
     size_t num_wgps_m = (M + wgp_size_m - 1) / wgp_size_m;
     size_t num_wgps_n = (N + wgp_size_n - 1) / wgp_size_n;
 
-    sycl::range<2> global_range(num_wgps_m* wgp_size_m, num_wgps_n* wgp_size_n);
-    sycl::range<2> local_range(wgp_size_m, wgp_size_n);
-    sycl::nd_range<2> nd_range(global_range, local_range);
+    sycl::range<3> global_range(num_wgps_m* wgp_size_m, num_wgps_n* wgp_size_n, split_factor);
+    sycl::range<3> local_range(wgp_size_m, wgp_size_n, 1);
+    sycl::nd_range<3> nd_range(global_range, local_range);
+
+    float beta = ctx.beta;
+    opT* C_ptr = ctx.C.device_ptr;
+    q.parallel_for(sycl::range<2>(M, N), [=](sycl::id<2> idx) {
+        C_ptr[idx[0] * N + idx[1]] = beta * C_ptr[idx[0] * N + idx[1]];
+    }).wait();
 
     auto event = q.submit(
     [&](sycl::handler& syclHandler)
     {
 
-        sycl::local_accessor<opT, 2> tile_A(local_range, syclHandler);
-        sycl::local_accessor<opT, 2> tile_B(local_range, syclHandler);
+        sycl::range<2> tile_range(wgp_size_m, wgp_size_n);
+        sycl::local_accessor<opT, 2> tile_A(tile_range, syclHandler);
+        sycl::local_accessor<opT, 2> tile_B(tile_range, syclHandler);
 
-        SyclGEMM::TiledGEMM<opT, tile_dim> 
+        SyclGEMM::SplitKGEMM<opT, tile_dim, split_factor> 
         kernel(
             ctx.A.device_ptr,
             ctx.B.device_ptr,
@@ -47,6 +55,7 @@ int main(){
         );
         syclHandler.parallel_for(nd_range, kernel);
     });
+
     event.wait();
 
     auto start = event.get_profiling_info<sycl::info::event_profiling::command_start>();

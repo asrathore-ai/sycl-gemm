@@ -1,6 +1,9 @@
+.vscode/*
+
 #kernel objects
 naive
 tiled 
+splitk
 
 # Prerequisites
 *.d
