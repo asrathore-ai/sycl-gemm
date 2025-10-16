@@ -9,7 +9,7 @@ constexpr int wgp_size_m = 32;
 constexpr int wgp_size_n = 32;
 
 int main(){
-    sycl::queue q{sycl::gpu_selector_v};
+    sycl::queue q{sycl::gpu_selector_v, sycl::property::queue::enable_profiling()};
     SyclGEMM::print_device_info(q);
 
     using opT = float;
@@ -23,7 +23,7 @@ int main(){
     sycl::range<2> local_range(wgp_size_m, wgp_size_n);
     sycl::nd_range<2> nd_range(global_range, local_range);
 
-    q.submit(
+    auto event = q.submit(
     [&](sycl::handler& syclHandler)
     {
         SyclGEMM::NaiveGemm<opT> 
@@ -38,5 +38,13 @@ int main(){
             ctx.beta
         );
         syclHandler.parallel_for(nd_range, kernel);
-    }).wait();
+    });
+    event.wait();
+    
+    auto start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
+    auto end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
+    double kernel_time_ns = (end - start);
+    double kernel_time_ms = kernel_time_ns * 1e-6;
+
+    std::cout << "Naive Kernel execution time: " << kernel_time_ms << " ms" << std::endl;
 }
