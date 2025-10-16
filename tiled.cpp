@@ -40,8 +40,6 @@ int main(){
             ctx.M,
             ctx.N,
             ctx.K,
-            ctx.alpha,
-            ctx.beta,
             tile_A,
             tile_B
         );

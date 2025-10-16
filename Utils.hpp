@@ -73,8 +73,6 @@ namespace SyclGEMM{
         const int M;
         const int N;
         const int K;
-        const float alpha;
-        const float beta;
 
         RandomMatrix<T, 50, 100> A;
         RandomMatrix<T, 50, 100> B;
@@ -83,7 +81,6 @@ namespace SyclGEMM{
         Context(sycl::queue& q, int m, int n, int k)
         : Q(q), 
           M(m), N(n), K(k), 
-          alpha(get_random<float, 0, 1>()), beta(get_random<float, 0, 1>()),
           A(Q, M*K),
           B(Q, K*N),
           C(Q, M*N)

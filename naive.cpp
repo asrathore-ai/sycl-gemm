@@ -33,9 +33,7 @@ int main(){
             ctx.C.device_ptr,
             ctx.M,
             ctx.N,
-            ctx.K,
-            ctx.alpha,
-            ctx.beta
+            ctx.K
         );
         syclHandler.parallel_for(nd_range, kernel);
     });

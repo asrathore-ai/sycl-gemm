@@ -15,9 +15,7 @@ SyclGEMM::reference_gemm(
     ctx.C.host_ptr,
     ctx.M,
     ctx.N,
-    ctx.K,
-    ctx.alpha,
-    ctx.beta
+    ctx.K
 );
 
 ctx.C.assert_host_device_equality();

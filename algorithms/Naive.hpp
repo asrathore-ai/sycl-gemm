@@ -14,11 +14,9 @@ struct NaiveGemm{
     const int M;
     const int N;
     const int K;
-    const float alpha;
-    const float beta;
 
-    NaiveGemm(const T* a, const T* b, T* c, int m, int n, int k, float alpha, float beta)
-    : A(a), B(b), C(c), M(m), N(n), K(k), alpha(alpha), beta(beta)
+    NaiveGemm(const T* a, const T* b, T* c, int m, int n, int k)
+    : A(a), B(b), C(c), M(m), N(n), K(k)
     {}
 
     void operator()(sycl::nd_item<2> work_item) const {
@@ -33,7 +31,7 @@ struct NaiveGemm{
         for(int k = 0; k < K; k++){
             ab += A[i*K + k]*B[k*N + j];
         }
-        C[i*N + j] = alpha*ab + beta*C[i*N + j];
+        C[i*N + j] = ab + C[i*N + j];
     }
 };
 

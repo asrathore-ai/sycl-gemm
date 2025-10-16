@@ -14,15 +14,13 @@ struct TiledGEMM{
     const int M;
     const int N;
     const int K;
-    const float alpha;
-    const float beta;
 
     sycl::local_accessor<T, 2> tile_A;
     sycl::local_accessor<T, 2> tile_B;
 
-    TiledGEMM(T* a, T* b, T* c, int m, int n, int k, float alpha, float beta,
+    TiledGEMM(T* a, T* b, T* c, int m, int n, int k,
     sycl::local_accessor<T, 2> tile_a, sycl::local_accessor<T, 2> tile_b)
-    : A(a), B(b), C(c), M(m), N(n), K(k), alpha(alpha), beta(beta),
+    : A(a), B(b), C(c), M(m), N(n), K(k),
       tile_A(tile_a), tile_B(tile_b)  
     {}
 
@@ -67,7 +65,7 @@ struct TiledGEMM{
         }
 
         if (global_row < M && global_col < N) {
-            C[global_row * N + global_col] = alpha * accumulator + beta * C[global_row * N + global_col];
+            C[global_row * N + global_col] = accumulator +  C[global_row * N + global_col];
         }
     }
 };
