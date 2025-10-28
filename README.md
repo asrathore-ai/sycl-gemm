@@ -1,22 +1,15 @@
-# GEMM ANalysis
+# GEMM Analysis
 
-ALgorithms implemented:
+Algorithms implemented:
 * Naive GEMM
 * Tiled GEMM
+* Splitk GEMM
+* Streamk GEMM
 
-## How to verify
+## How to run 
 
 ```
-using opT = int; # Verify using int to check alagorithm correctness.
-
-SyclGEMM::reference_gemm(
-    ctx.A.host_ptr,
-    ctx.B.host_ptr,
-    ctx.C.host_ptr,
-    ctx.M,
-    ctx.N,
-    ctx.K
-);
-
-ctx.C.assert_host_device_equality();
+make {naive/tiled/splitk/streamk}
+./{naive/tiled/splitk/streamk}
+make clean
 ```

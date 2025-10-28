@@ -47,6 +47,17 @@ int main(){
     });
     event.wait();
 
+    SyclGEMM::reference_gemm(
+        ctx.A.host_ptr,
+        ctx.B.host_ptr,
+        ctx.C.host_ptr,
+        ctx.M,
+        ctx.N,
+        ctx.K
+    );
+
+    ctx.C.assert_host_device_equality();
+    
     auto start = event.get_profiling_info<sycl::info::event_profiling::command_start>();
     auto end = event.get_profiling_info<sycl::info::event_profiling::command_end>();
     double kernel_time_ns = (end - start);
